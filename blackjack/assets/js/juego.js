@@ -5,16 +5,17 @@ const otrasCartas = ['A','J','Q','K'];
 let puntosJugador = 0 ;
 let puntosOrdenador = 0;
 
-
-//Referencias HTMl
+//------------------------------------------------ Referencias HTMl
 
 const btnPedir = document.querySelector('#btnPedir');
-console.log( btnPedir );
+const btnDetener = document.querySelector('#btnDetener');
+const btnNuevoJuego = document.querySelector('#btnNuevoJuego');
 
+const divCartasJugador = document.querySelector('#jugador-cartas');
+const divCartasOrdenador = document.querySelector('#ordenador-cartas');
 const puntosHTML = document.querySelectorAll('small');
 
-
-
+//---------------------------------------------- Crea baraja
 const crearBaraja = () => {
 
     for( let i = 2; i <= 10; i++ ){
@@ -43,7 +44,7 @@ const crearBaraja = () => {
 
 crearBaraja();
 
-//Esta función permite coger una carta
+//---------------------------- Esta función permite coger una carta
 
 const pedirCarta = () => {
 
@@ -51,23 +52,13 @@ const pedirCarta = () => {
         throw 'No quedan cartas en la baraja.'
     }
 
-    //console.log( 'cantidad cartas antes del .pop: ', baraja.length );
-
     const carta = baraja.pop();
-
-    //console.log( 'cantidad cartas ahora: ', baraja.length );
-    //console.log( 'carta seleccionada: ', carta );
 
     return carta;
 }
 
-/*
-for(let i = 0; i <= 100; i++){
-    pedirCarta();
-}
-*/
 
-//--------------------------------------------pedirCarta();
+//--------------------------------------------- pedirCarta();
 
 const valorCarta = ( carta ) => {
 
@@ -79,22 +70,54 @@ const valorCarta = ( carta ) => {
 
 }
 
-const valor = valorCarta( pedirCarta() );
+//--------------------------------------------- Turno ordenador
 
-//console.log( {valor} );
+const turnoOrdenador = ( puntosMinimos ) => {
 
-//---------------------------------------------Eventos
+    do {
+
+        const carta = pedirCarta();
+    
+        puntosOrdenador = puntosOrdenador + valorCarta( carta );
+        puntosHTML[1].innerText = puntosOrdenador;
+    
+        //crea carta en memoria <img>
+        const imgCarta = document.createElement('img');
+        imgCarta.src = `assets/cartas/${ carta }.png`;
+        imgCarta.classList.add('carta');
+        divCartasOrdenador.append(imgCarta);
+
+        if(puntosMinimos > 21 ){
+            break;
+        }
+
+    } while( (puntosOrdenador < puntosMinimos) && (puntosMinimos <= 21) );
+
+    setTimeout(()=>{
+
+        if( puntosOrdenador === puntosMinimos ){
+
+            window.alert('-- PARTIDA EMPATADA --');
+    
+        } else if ( puntosJugador > 21 ){
+            window.alert('El ordenador te ha ganado!! ;(');
+        } else if ( puntosOrdenador > 21 ){
+            window.alert('Has ganado!! ;) !!');
+        }
+
+    }, 10);
+
+}
+
+//--------------------------------------------------- Eventos
 
 /*
 Escuchar cuando user hace click en button. 
+puede ser focus, dbclick,
+callback = función que se manda como argumento de otra función 
 */
-
-//puede ser focus, dbclick,
-//callback = función que se manda como argumento de otra función 
 btnPedir.addEventListener('click', () => {
-    //console.log('click');
     const carta = pedirCarta();
-    console.log(carta);
 
     puntosJugador = puntosJugador + valorCarta( carta );
 
@@ -102,6 +125,58 @@ btnPedir.addEventListener('click', () => {
 
     console.log( puntosJugador );
 
+    //crea carta en memoria <img>
+    const imgCarta = document.createElement('img');
+    imgCarta.src = `assets/cartas/${ carta }.png`;
+    imgCarta.classList.add('carta');
+
+    divCartasJugador.append(imgCarta);
+
+    if( puntosJugador > 21 ){
+    
+        //window.alert('Has perdido! FIN DE PARTIDA!');
+        btnPedir.disabled = true;
+        btnDetener.disabled = true;
+        turnoOrdenador( puntosJugador );
+    
+    } else if (puntosJugador === 21 ){
+        
+        //window.alert('¡¡¡HAS GANADO!!!');
+        btnPedir.disabled = true;
+        btnDetener.disabled = true;
+        turnoOrdenador( puntosJugador );
+    
+    }
+
 });
 
 
+btnDetener.addEventListener('click', () => {
+
+    btnPedir.disabled = true;
+    btnDetener.disabled = true;
+
+    turnoOrdenador( puntosJugador );
+
+});
+
+btnNuevoJuego.addEventListener('click', () => {
+
+    console.clear();
+
+    baraja=[];
+    
+    baraja = crearBaraja();
+
+    puntosJugador   = 0;
+    puntosOrdenador = 0;
+
+    puntosHTML[0].innerText = 0;
+    puntosHTML[1].innerText = 0;
+
+    divCartasOrdenador.innerHTML = '';
+    divCartasJugador.innerHTML = '';
+
+    btnPedir.disabled = false;
+    btnDetener.disabled = false;
+});
